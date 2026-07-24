@@ -2,11 +2,15 @@ fastapi
 uvicorn[standard]
 python-dotenv
 python-multipart
-google-generativeai
+google-genai
 chromadb
 pypdf
 python-docx
+sentence-transformers
 openpyxl
 python-pptx
 langchain
+langchain-text-splitters
 PyJWT
+rank_bm25
+numpy

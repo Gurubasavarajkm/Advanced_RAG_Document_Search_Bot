@@ -16,12 +16,12 @@ from services.vector_db import (
     delete_document_from_db, get_all_documents
 )
 
-app = FastAPI(title="DocuMind API")
+app = FastAPI(title="Document Search Bot")
 
 # CORS middleware to allow the frontend to communicate with the backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"], 
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

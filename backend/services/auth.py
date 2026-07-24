@@ -9,34 +9,32 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-in-production")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
 
-# --- SIMPLIFIED USER DATABASE ---
-# We now store the plain text password directly.
+# --- DEMO USER DATABASE ---
 FAKE_USERS_DB = {
     "admin": {
         "username": "admin",
-        "password": "adminpass",  # Plain text password
+        "password": "adminpass",
         "role": "admin"
     },
     "user": {
         "username": "user",
-        "password": "userpass",    # Plain text password
+        "password": "userpass", 
         "role": "user"
     }
 }
 
-# This function remains the same, it just gets the user data.
 def get_user(db, username: str):
     if username in db:
         return db[username]
     return None
 
-# This function is for creating the JWT after a successful login. It remains the same.
+# Creating the JWT after a successful login
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
@@ -47,7 +45,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# This function checks the JWT on subsequent requests. It remains the same.
+# Checking the JWT on subsequent requests.
 def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -58,15 +56,17 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
+            print("JWT Error: sub is None in payload")
             raise credentials_exception
-    except jwt.PyJWTError:
+    except jwt.PyJWTError as e:
+        print(f"JWT PyJWTError: {e}")
         raise credentials_exception
     user = get_user(FAKE_USERS_DB, username)
     if user is None:
         raise credentials_exception
     return user
 
-# This function checks the user's role from the JWT. It remains the same.
+# Checking the user's role from the JWT.
 def get_current_admin_user(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not enough permissions")
